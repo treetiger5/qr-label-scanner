@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QR Code Scanner (MVP)</title>
+  <!-- 화면 스타일 -->
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    input, button {
+      font-size: 16px;
+      padding: 8px 12px;
+      margin: 8px;
+    }
+    /* Save 버튼을 강조 */
+    #saveData {
+      font-size: 18px;
+      font-weight: bold;
+      background-color: #ffd966; /* 노란색 */
+    }
+    /* Download CSV 버튼은 덜 강조 */
+    #downloadCSV {
+      font-size: 14px;
+      background-color: #d9d9d9; /* 회색 */
+    }
+    /* Inbound/Outbound 버튼 스타일 */
+    .transaction-button {
+      font-size: 16px;
+      padding: 10px;
+      margin: 5px;
+      border: none;
+      cursor: pointer;
+      display: inline-block;
+      width: 100px;
+    }
+    .active-inbound {
+      background-color: #4CAF50; /* 초록색 (Inbound) */
+      color: white;
+    }
+    .active-outbound {
+      background-color: #f44336; /* 빨간색 (Outbound) */
+      color: white;
+    }
+    #video {
+      display: none;
+      margin-top: 10px;
+      border: 2px solid #333;
+    }
+    #result {
+      margin-top: 15px;
+      font-size: 18px;
+      color: #333;
+    }
+    /* 기본적으로 Stock Balance 숨김 */
+    #stockBalanceContainer {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>QR Code Scanner (MVP)</h1>
+
+  <!-- 사용자 입력란 (사용자 이름) -->
+  <div>
+    <label for="userName">User Name:</label>
+    <input type="text" id="userName" placeholder="Enter user name..." />
+  </div>
+
+  <!-- QR 코드 스캔 버튼 -->
+  <button id="scanButton">Scan QR</button>
+
+  <!-- 스캔 취소 버튼 (기본적으로 숨김) -->
+  <button id="cancelScan" style="display: none;">Cancel Scan</button>
+
+  <!-- 스캔 결과 표시 -->
+  <p id="result">Scanned information will appear here.</p>
+
+  <!-- 입고/출고 선택 버튼 -->
+  <div>
+    <button id="inboundButton" class="transaction-button active-inbound">Inbound</button>
+    <button id="outboundButton" class="transaction-button">Outbound</button>
+  </div>
+
+  <!-- Stock Balance (기본적으로 숨김) -->
+  <div id="stockBalanceContainer">
+    <label for="stockBalance">Stock Balance:</label>
+    <input type="text" id="stockBalance" readonly />
+  </div>
+
+  <!-- 수량 입력 -->
+  <div>
+    <label for="quantityInput">Quantity:</label>
+    <input type="number" id="quantityInput" min="1" placeholder="Enter quantity..." />
+  </div>
+
+  <!-- Save 버튼 -->
+  <button id="saveData">Save</button>
+  <!-- Download CSV 버튼 -->
+  <button id="downloadCSV">Download CSV</button>
+
+  <!-- 비디오 태그 (카메라 미리보기 영역) -->
+  <video id="video" playsinline></video>
+
+  <!-- jsQR -->
+  <script src="jsQR.js"></script>
+
+  <!-- 메인 로직 스크립트 -->
+  <script src="script.js"></script>
+
+</body>
+</html>
