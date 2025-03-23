@@ -22,13 +22,34 @@
     /* 가운데 흰색 박스 스타일 */
     .container {
       background-color: #FFFFFF;
-      width: 350px;
+      width: min(90%, 400px); /* 화면 크기가 작으면 90%, 크면 최대 400px */
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
       text-align: center;
       position: relative; /* 다운로드 링크를 하단 오른쪽에 배치하기 위해 상대 위치 지정 */
     }
+
+    /* 화면이 600px 이하일 때 스타일 조정 */
+@media screen and (max-width: 600px) {
+    .container {
+        width: 90%;  /* 화면의 90%를 차지하도록 설정 */
+        padding: 15px; /* 모바일에서 여백을 조금 줄임 */
+    }
+
+    .title {
+        font-size: 36px; /* 타이틀 크기 조정 */
+    }
+
+    .subtitle {
+        font-size: 18px;
+    }
+
+    button {
+        font-size: 14px; /* 버튼 폰트 크기 줄이기 */
+        padding: 8px;
+    }
+}
 
     /* 타이틀(UPNK)와 서브타이틀(Label Stock Management)을 함께 묶은 영역 */
     .title-container {
