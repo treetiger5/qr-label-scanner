@@ -2,117 +2,516 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>QR Code Scanner (MVP)</title>
-  <!-- 화면 스타일 -->
+  <title>UPNK Label Stock Management</title>
   <style>
+    /* 
+      1) 전체 화면을 가운데 정렬하고 
+      2) 배경색을 남색(#002B5B)으로 지정 
+      3) 내부 컨테이너는 흰색 박스로 표시 
+    */
     body {
       font-family: sans-serif;
-      margin: 20px;
+      margin: 0;
+      background-color: #002B5B; /* 남색 배경 */
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      height: 100vh; 
+    }
+
+    /* 가운데 흰색 박스 스타일 */
+    .container {
+      background-color: #FFFFFF;
+      width: 350px;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
       text-align: center;
+      position: relative; /* 다운로드 링크를 하단 오른쪽에 배치하기 위해 상대 위치 지정 */
     }
-    h1 {
-      margin-bottom: 10px;
+
+    /* 타이틀(UPNK)와 서브타이틀(Label Stock Management)을 함께 묶은 영역 */
+    .title-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+
+    /* 타이틀(UPNK) 스타일 */
+    .title {
+      color: #003366; 
+      font-size: 52px; 
+      font-weight: bold;
+      letter-spacing: -2px;
+    }
+
+    /* 서브타이틀(Label Stock Management) 스타일 */
+    .subtitle {
+      color: #003366;
+      font-size: 24px;
+      font-weight: bold;
+      margin-left: 10px;
+      text-align: left;
+    }
+
+    /*
+      모든 input, button 요소는 너비를 100%로,
+      간격(padding)을 10px로 설정
+    */
     input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
       font-size: 16px;
-      padding: 8px 12px;
-      margin: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
     }
-    /* Save 버튼을 강조 */
+
+    /* 모든 버튼에 기본 적용될 스타일 */
+    .btn {
+      cursor: pointer;
+      font-weight: bold;
+      border: none;
+    }
+
+    /* QR 스캔 버튼(파란색) */
+    .btn-primary {
+      background-color: #45AED6;
+      color: white;
+    }
+
+    /* 입고/출고 버튼을 좌우로 배치하는 컨테이너 */
+    .transaction-container {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+    }
+
+    /* 입고/출고 버튼 스타일(큰 직사각형 형태) */
+    .transaction-button {
+      font-size: 15px;
+      font-weight: bold;
+      padding: 60px; /* 세로 길이를 넉넉히 */
+      margin: 10px 0;
+      cursor: pointer;
+      width: 48%; /* 두 버튼을 좌우 균등 배분 */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      border: none;
+    }
+
+    /* Inbound일 때 활성화 되는 녹색 배경 */
+    .active-inbound {
+      background-color: #4CAF50;
+    }
+
+    /* Outbound일 때 활성화 되는 빨간색 배경 */
+    .active-outbound {
+      background-color: #f44336;
+    }
+
+    /* 스캔 결과를 표시하는 div */
+    #result {
+      background-color: #D3D3D3; 
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+      color: #333;
+      text-align: left;
+      display: none; /* 초기에는 안 보이도록 처리 */
+      box-sizing: border-box;
+      word-wrap: break-word;
+    }
+
+    /* Save 버튼(노란색). 초기에는 숨김(display:none) 상태 */
     #saveData {
       font-size: 18px;
       font-weight: bold;
-      background-color: #ffd966; /* 노란색 */
+      background-color: #ffd966;
+      display: none;
     }
-    /* Download CSV 버튼은 덜 강조 */
+
+    /* 
+      다운로드 CSV 링크 스타일 수정 (배경색을 흰색으로, 
+      간격 증가, 위치 아래로 조정) 
+    */
     #downloadCSV {
-      font-size: 14px;
-      background-color: #d9d9d9; /* 회색 */
-    }
-    /* Inbound/Outbound 버튼 스타일 */
-    .transaction-button {
-      font-size: 16px;
-      padding: 10px;
-      margin: 5px;
+      position: absolute;
+      bottom: 5px;    /* 아래로 약간 더 내림 */
+      right: 10px;    /* 오른쪽 간격 */
+      background-color: #FFFFFF; /* 흰색 배경 */
+      font-size: 11px; 
+      font-family: sans-serif;
       border: none;
+      text-decoration: none;
+      padding: 3px 8px; /* 클릭 영역 확보 및 간격 증가 */
+      margin: 0;
       cursor: pointer;
-      display: inline-block;
-      width: 100px;
+      color: #000;      /* 글자색 검정 */
     }
-    .active-inbound {
-      background-color: #4CAF50; /* 초록색 (Inbound) */
-      color: white;
+
+    /* 재고 표시 영역(Stock) */
+    .stock-input {
+      position: relative;
+      display: flex;
+      align-items: center;
+      margin: 10px 0;
     }
-    .active-outbound {
-      background-color: #f44336; /* 빨간색 (Outbound) */
-      color: white;
+    .stock-input label {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #666;
+      font-size: 14px;
     }
+    .stock-input input {
+      padding-left: 50px; /* label영역 확보 */
+      text-align: right;  /* 숫자형태이므로 오른쪽 정렬 */
+    }
+
+    /*
+      카메라 미리보기 video 태그
+      초기에는 display:none 으로 숨김
+    */
     #video {
       display: none;
       margin-top: 10px;
       border: 2px solid #333;
+      width: 100%;
     }
-    #result {
-      margin-top: 15px;
-      font-size: 18px;
-      color: #333;
-    }
-    /* 기본적으로 Stock Balance 숨김 */
-    #stockBalanceContainer {
-      display: none;
+
+    /*
+      스캔 취소 버튼은 기본 숨김
+    */
+    #cancelScan {
+      display: none; 
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <!-- 타이틀 영역 -->
+    <div class="title-container">
+      <div class="title">UPNK</div>
+      <div class="subtitle">Label Stock<br>Management</div>
+    </div>
 
-  <h1>QR Code Scanner (MVP)</h1>
+    <!-- 사용자 이름 입력 -->
+    <input 
+      type="text" 
+      id="userName" 
+      placeholder="Enter user name..." 
+    />
 
-  <!-- 사용자 입력란 (사용자 이름) -->
-  <div>
-    <label for="userName">User Name:</label>
-    <input type="text" id="userName" placeholder="Enter user name..." />
+    <!-- QR 스캔 버튼 / 스캔 취소 버튼 -->
+    <button id="scanButton" class="btn btn-primary">Scan QR</button>
+    <button id="cancelScan" class="btn">Cancel Scan</button>
+
+    <!-- 스캔 결과 표시 박스 (기본적으로 숨김) -->
+    <div id="result">Scanned information will appear here.</div>
+
+    <!-- 입고(Inbound)/출고(Outbound) 버튼 -->
+    <div class="transaction-container">
+      <button id="inboundButton" class="transaction-button active-inbound">Inbound</button>
+      <button id="outboundButton" class="transaction-button">Outbound</button>
+    </div>
+
+    <!-- 재고 표시(Stock) -->
+    <div class="stock-input">
+      <label for="stockBalance">Stock:</label>
+      <input 
+        type="text" 
+        id="stockBalance" 
+        value="0" 
+        readonly 
+      />
+    </div>
+
+    <!-- 수량 입력 -->
+    <input 
+      type="number" 
+      id="quantityInput" 
+      min="1" 
+      placeholder="Enter quantity..." 
+    />
+
+    <!-- Save 버튼 (노란색) -->
+    <button id="saveData" class="btn">Save</button>
+
+    <!-- 다운로드 CSV 링크 (하단 오른쪽, 흰색 배경, 클릭 시 다운로드) -->
+    <a id="downloadCSV" href="javascript:void(0)">Download CSV</a>
+
+    <!-- 카메라 미리보기 (비디오) -->
+    <video id="video" playsinline></video>
   </div>
 
-  <!-- QR 코드 스캔 버튼 -->
-  <button id="scanButton">Scan QR</button>
-
-  <!-- 스캔 취소 버튼 (기본적으로 숨김) -->
-  <button id="cancelScan" style="display: none;">Cancel Scan</button>
-
-  <!-- 스캔 결과 표시 -->
-  <p id="result">Scanned information will appear here.</p>
-
-  <!-- 입고/출고 선택 버튼 -->
-  <div>
-    <button id="inboundButton" class="transaction-button active-inbound">Inbound</button>
-    <button id="outboundButton" class="transaction-button">Outbound</button>
-  </div>
-
-  <!-- Stock Balance (기본적으로 숨김) -->
-  <div id="stockBalanceContainer">
-    <label for="stockBalance">Stock Balance:</label>
-    <input type="text" id="stockBalance" readonly />
-  </div>
-
-  <!-- 수량 입력 -->
-  <div>
-    <label for="quantityInput">Quantity:</label>
-    <input type="number" id="quantityInput" min="1" placeholder="Enter quantity..." />
-  </div>
-
-  <!-- Save 버튼 -->
-  <button id="saveData">Save</button>
-  <!-- Download CSV 버튼 -->
-  <button id="downloadCSV">Download CSV</button>
-
-  <!-- 비디오 태그 (카메라 미리보기 영역) -->
-  <video id="video" playsinline></video>
-
-  <!-- jsQR -->
+  <!-- jsQR 라이브러리(같은 폴더에 jsQR.js 파일이 있어야 함) -->
   <script src="jsQR.js"></script>
 
-  <!-- 메인 로직 스크립트 -->
-  <script src="script.js"></script>
+  <!-- 메인 스크립트 -->
+  <script>
+    /* 
+      currentQR: 현재 스캔된 QR 코드값
+      transactionType: 현재 선택된 거래 유형 ("Inbound" 또는 "Outbound")
+      stockData: QR 코드별 재고를 저장하는 객체 
+      logs: 입출고 기록을 저장하는 배열
+    */
+    let currentQR = null;
+    let transactionType = "Inbound";
+    const stockData = {};
+    const logs = [];
 
+    // 자주 쓰는 document.getElementById를 el() 함수로 짧게 사용
+    const el = (id) => document.getElementById(id);
+
+    /* 
+      setTransaction 함수:
+      Inbound/Outbound 버튼 클릭 시 
+      1) transactionType 갱신
+      2) 버튼 UI 스타일 반영
+      3) Save 버튼 노출 여부 업데이트 
+    */
+    function setTransaction(type) {
+      transactionType = type;
+      el('inboundButton').classList.toggle('active-inbound', type === 'Inbound');
+      el('outboundButton').classList.toggle('active-outbound', type === 'Outbound');
+      checkSaveButton();
+    }
+
+    /*
+      checkSaveButton 함수:
+      - 스캔된 QR(currentQR), 
+      - 사용자 이름(userName), 
+      - 수량(quantityInput)이 모두 있으면 Save 버튼 보이기
+      - 아니면 숨김
+    */
+    function checkSaveButton() {
+      // userName과 quantityInput이 비어있지 않고, currentQR이 null이 아닐 때만 Save를 활성화
+      if (el('userName').value && el('quantityInput').value && currentQR) {
+        el('saveData').style.display = 'block';
+      } else {
+        el('saveData').style.display = 'none';
+      }
+    }
+
+    /*
+      scanQR 함수:
+      - 카메라 접근을 요청하고, 성공 시 video 태그에서 화면을 띄움
+      - setInterval 혹은 requestAnimationFrame으로 매 프레임 캡쳐 → jsQR로 스캔
+      - 스캔 성공 시 currentQR에 값 저장, 비디오 종료
+    */
+    async function scanQR() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" } // 후면 카메라 우선
+        });
+        el('video').srcObject = stream;
+        el('video').play();
+        el('video').style.display = 'block';   // 비디오 표시
+        el('cancelScan').style.display = 'block'; // 취소버튼 표시
+        el('result').style.display = 'none';   // 안내 문구 숨김
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        function scan() {
+          /*
+            video.readyState가 HAVE_ENOUGH_DATA이면 
+            (카메라로부터 영상 프레임을 얻을 수 있는 상태)
+          */
+          if (el('video').readyState === el('video').HAVE_ENOUGH_DATA) {
+            canvas.width = el('video').videoWidth;
+            canvas.height = el('video').videoHeight;
+            ctx.drawImage(el('video'), 0, 0, canvas.width, canvas.height);
+
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            // jsQR 실행
+            const code = jsQR(imageData.data, canvas.width, canvas.height);
+
+            // 만약 code가 인식되었다면 → 스캔 성공
+            if (code) {
+              currentQR = code.data;
+              el('result').innerText = `Scanned: ${currentQR}`;
+              el('result').style.display = 'block';
+              stopScan(); // 스캔 성공했으므로 카메라 정지
+              
+              // 해당 QR의 재고(stockData) 보이기
+              el('stockBalance').value = stockData[currentQR] || 0;
+              checkSaveButton();
+              return;
+            }
+          }
+          // 아직 스캔 결과가 없으면, 매 프레임마다 다시 scan 함수를 호출
+          requestAnimationFrame(scan);
+        }
+        scan();
+      } catch (err) {
+        // 카메라 접근 오류 메시지를 영어로 변경
+        alert("Camera access was denied or an error occurred.\n" + err);
+        console.error(err);
+      }
+    }
+
+    /*
+      stopScan 함수:
+      - 비디오 스트림을 중지(track.stop())하여 카메라를 끔
+      - 비디오와 취소버튼 숨김
+    */
+    function stopScan() {
+      if (el('video').srcObject) {
+        el('video').srcObject.getTracks().forEach(track => track.stop());
+      }
+      el('video').style.display = 'none';
+      el('cancelScan').style.display = 'none';
+    }
+
+    /*
+      saveData 함수:
+      - Outbound 시 재고가 부족하면 "Not enough stock available" 후 return
+      - 정상 처리 시 stockData 갱신
+      - logs 배열에 기록 푸시
+      - 알림(alert) 후 초기화면으로 리셋
+    */
+    function saveData() {
+      if (!currentQR) {
+        // QR 코드 스캔 실패 메시지를 영어로 변경
+        alert("No QR code scanned.");
+        return;
+      }
+      const user = el('userName').value.trim();
+      if (!user) {
+        // 사용자 이름 입력 안내 메시지를 영어로 변경
+        alert("Please enter a user name.");
+        return;
+      }
+
+      const qty = +el('quantityInput').value; // 숫자로 변환
+      if (!qty || qty < 1) {
+        // 수량 입력 안내 메시지를 영어로 변경
+        alert("Please enter a valid quantity (at least 1).");
+        return;
+      }
+
+      const oldStock = stockData[currentQR] || 0; // 기존 재고
+      let newStock = oldStock;
+
+      if (transactionType === "Inbound") {
+        // 입고: 재고에 qty 추가
+        newStock += qty;
+      } else {
+        // 출고: 재고에서 qty만큼 빼야 함
+        if (qty > oldStock) {
+          // 재고 부족 메시지는 이미 영어
+          alert("Not enough stock available");
+          return;
+        }
+        newStock -= qty;
+      }
+
+      // 최종적으로 newStock을 실제 stockData에 반영
+      stockData[currentQR] = newStock;
+
+      // 로그 기록
+      const now = new Date();
+      const datetimeStr = now.toLocaleString(); // 예) 2025-03-22 16:35:50
+      logs.push({
+        user, 
+        datetime: datetimeStr,
+        qr: currentQR,
+        qty,
+        type: transactionType,
+        stock: newStock
+      });
+
+      // 저장 완료 메시지를 영어로 변경
+      alert("Data saved!");
+
+      // ==== (3) Save 후 초기화면으로 돌아가기 ====
+      resetToInitial();
+    }
+
+    /*
+      resetToInitial 함수:
+      - 스캔 결과/현재 QR, 입력값 등을 모두 초기화
+      - Inbound 버튼 활성화 상태로 복원
+      - Outbound 버튼 비활성화
+      - 안내문구 원래대로
+    */
+    function resetToInitial() {
+      // 1) QR 관련 변수 초기화
+      currentQR = null;
+
+      // 2) 사용자 입력값/수량/재고 등 모두 리셋
+      el('userName').value = "";
+      el('quantityInput').value = "";
+      el('stockBalance').value = "0";
+
+      // 3) result 문구/표시 리셋
+      el('result').innerText = "Scanned information will appear here.";
+      el('result').style.display = "none";
+
+      // 4) 거래 유형 다시 Inbound로
+      transactionType = "Inbound";
+      el('inboundButton').classList.add('active-inbound');
+      el('outboundButton').classList.remove('active-outbound');
+
+      // 5) Save 버튼 숨김
+      el('saveData').style.display = 'none';
+    }
+
+    /*
+      downloadCSV 함수:
+      - logs 배열을 CSV 형식 문자열로 만들고,
+      - 임시 a 태그를 만들어 클릭하여 다운로드
+    */
+    function downloadCSV() {
+      if (logs.length === 0) {
+        // 다운로드할 데이터가 없을 때 알림 메시지는 이미 영어
+        alert("No data to download.");
+        return;
+      }
+
+      // CSV 헤더
+      let csv = "User,DateTime,QR,Qty,Type,Stock\n";
+      
+      // logs 배열을 순회하면서 CSV 바디 부분 생성
+      logs.forEach(item => {
+        csv += [
+          item.user,
+          `"${item.datetime}"`,
+          `"${item.qr}"`,
+          item.qty,
+          item.type,
+          item.stock
+        ].join(",") + "\n";
+      });
+      
+      // data URI 스킴으로 CSV 다운로드
+      const link = document.createElement('a');
+      link.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURI(csv);
+      link.download = 'logs.csv';
+      link.click();
+    }
+
+    /*
+      이벤트 리스너 등록 
+      - 버튼/입력필드에 대한 핸들러 지정
+    */
+    el('scanButton').onclick = scanQR;       // 스캔 시작
+    el('cancelScan').onclick = stopScan;     // 스캔 취소
+    el('inboundButton').onclick = () => setTransaction('Inbound');
+    el('outboundButton').onclick = () => setTransaction('Outbound');
+    el('saveData').onclick = saveData;
+    el('downloadCSV').onclick = downloadCSV; // 다운로드 CSV 클릭 시 실행
+
+    // 사용자가 입력할 때마다 Save 버튼 활성화 여부를 재체크
+    el('userName').oninput = checkSaveButton;
+    el('quantityInput').oninput = checkSaveButton;
+  </script>
 </body>
 </html>
