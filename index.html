@@ -23,8 +23,8 @@
 /* 기본 컨테이너 스타일 */
 .container {
     background-color: #FFFFFF;
-    width: 90%; /* 기본적으로 화면의 90% 차지 */
-    max-width: 420px; /* 최대 크기 420px 유지 (랩탑에서도 적절한 크기) */
+    width: 85%; /* 화면을 너무 꽉 채우지 않게 조정 */
+    max-width: 400px; /* 최대 크기는 400px */
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
@@ -32,15 +32,47 @@
     position: relative;
 }
 
-/* 작은 화면(태블릿 & 모바일)에서 최적화 */
-@media screen and (max-width: 768px) {
+/* 입력 필드 & 버튼 간격 조정 */
+input, button {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    margin-bottom: 12px; /* 입력 필드와 버튼 사이 간격 늘림 */
+}
+
+/* 버튼 크기 조정 (터치하기 편하게) */
+.btn {
+    cursor: pointer;
+    font-weight: bold;
+    border: none;
+    padding: 14px;
+}
+
+/* 입고/출고 버튼 스타일 */
+.btn-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.btn-inbound, .btn-outbound {
+    width: 48%; /* 버튼 크기 균일하게 */
+    height: 65px; /* 버튼이 너무 크지 않도록 */
+    font-size: 18px;
+}
+
+/* 작은 화면에서 조정 */
+@media screen and (max-width: 500px) {
     .container {
-        width: 95%; /* 모바일에서 더 넓게 보이도록 */
-        max-width: 350px; /* 최대 크기 350px로 제한 */
+        width: 90%; /* 더 꽉 차지 않도록 조정 */
+        padding: 15px;
     }
 
     .title {
-        font-size: 28px;
+        font-size: 30px;
     }
 
     .subtitle {
@@ -53,14 +85,7 @@
     }
 
     .btn-inbound, .btn-outbound {
-        height: 60px; /* 버튼 크기 조정 */
-    }
-}
-
-/* 데스크톱(큰 화면)에서 너무 넓어지지 않도록 제한 */
-@media screen and (min-width: 1024px) {
-    .container {
-        max-width: 450px; /* 랩탑에서도 너무 커지지 않도록 제한 */
+        height: 60px;
     }
 }
 
